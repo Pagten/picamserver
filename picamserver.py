@@ -225,9 +225,9 @@ class Timelapse:
 
   def _is_night(self, time):
     yesterday = time - timedelta(days=1)
-    (prev_night_start, prev_night_end) = self.location.night(date=yesterday, local=True)
-    (night_start, night_end) = self.location.night(date=time, local=True)
-    return (prev_night_start <= time and time <= prev_night_end) or (night_start <= time and time <= night_end)
+    (prev_daylight_start, prev_daylight_end) = self.location.daylight(date=yesterday, local=True)
+    (daylight_start, daylight_end) = self.location.daylight(date=time, local=True)
+    return not(prev_daylight_start <= time and time <= prev_daylight_end) and not(daylight_start <= time and time <= daylight_end)
   
   def _write_to_file(self, input, root_folders, now=None):
     if now is None: now = self._now()
