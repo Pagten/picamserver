@@ -41,22 +41,24 @@ class DirectoryWatchdog:
   def _on_fault(self):
     os.system('/sbin/shutdown -r +1')
 
-  def run(self):
+  def run_forever(self):
     while True:
       self.logger.debug("Sleeping for %d seconds", self.interval_seconds)
       time.sleep(self.interval_seconds)
+      self.run_one()
 
-      last_mod_time = self._get_last_dir_modification_datetime()
-      if last_mod_time is None:
-        self.logger.error("Last modification time is None, rebooting system.")
-        self._on_fault()
-        continue
+  def run_once(self):
+    last_mod_time = self._get_last_dir_modification_datetime()
+    if last_mod_time is None:
+      self.logger.error("Last modification time is None, rebooting system.")
+      self._on_fault()
+      continue
 
-      timediff = (datetime.now() - last_mod_time)
-      self.logger.debug("Time since last dir modification: %s", str(timediff))
-      if (timediff > self.timeout):
-        self.logger.warning("Time since last modification %s exceeds timeout of %s, rebooting system.", str(timediff), str(self.timeout))
-        self._on_fault()
+    timediff = (datetime.now() - last_mod_time)
+    self.logger.debug("Time since last dir modification: %s", str(timediff))
+    if (timediff > self.timeout):
+      self.logger.warning("Time since last modification %s exceeds timeout of %s, rebooting system.", str(timediff), str(self.timeout))
+      self._on_fault()
 
 def setup_logging():
   root_log = logging.getLogger('')
@@ -74,7 +76,7 @@ def setup_logging():
 def main():
   setup_logging()
   watchdog = DirectoryWatchdog(ROOT_DIR, TIMEOUT, INTERVAL_SECONDS)
-  watchdog.run()
+  watchdog.run_once()
 
 if __name__ == "__main__":
   main()
