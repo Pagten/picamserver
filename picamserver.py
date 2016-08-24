@@ -16,8 +16,6 @@ import pytz
 from functools import partial
 from astral import Astral
 
-utc=pytz.UTC
-
 BIND_ADDRESS = '192.168.0.12'
 BIND_PORT = 8000
 LOG_FILE = 'picamserver.log'
@@ -26,6 +24,7 @@ TIMELAPSE_INTERVAL = timedelta(seconds=60)
 TIMELAPSE_FOLDERS = ['/mnt/usb/timelapse/']
 TIMELAPSE_FOLDERS_FALLBACK = ['/mnt/sdcard/timelapse/']
 TIMELAPSE_ASTRAL_LOCATION = 'Brussels'
+TZ=pytz.timezone('Europe/Brussels')
  
 STILL_RESOLUTION = (1640,1232) #(3240,2464)
 VIDEO_RESOLUTION = (947,720)
@@ -225,8 +224,8 @@ class Timelapse:
 
   def _is_night(self, time):
     yesterday = time - timedelta(days=1)
-    (prev_daylight_start, prev_daylight_end) = self.location.daylight(date=yesterday, local=False)
-    (daylight_start, daylight_end) = self.location.daylight(date=time, local=False)
+    (prev_daylight_start, prev_daylight_end) = self.location.daylight(date=yesterday, local=True)
+    (daylight_start, daylight_end) = self.location.daylight(date=time, local=True)
     return not(prev_daylight_start <= time and time <= prev_daylight_end) and not(daylight_start <= time and time <= daylight_end)
   
   def _write_to_file(self, input, root_folders, now=None):
@@ -248,7 +247,7 @@ class Timelapse:
     return success
   
   def _now(self):
-    return utc.localize(datetime.now())
+    return TZ.localize(datetime.now())
 
   def __calc_md5sum(self, f):
     d = hashlib.md5()
@@ -284,7 +283,7 @@ class Timelapse:
   def __floorTime(self, dt=None, delta=timedelta(minutes=1)):
     roundTo = delta.total_seconds()
     if dt == None: dt = self._now()
-    seconds = (dt - utc.localize(dt.min)).seconds
+    seconds = (dt - TZ.localize(dt.min)).seconds
     rounding = (seconds // roundTo) * roundTo
     return dt + timedelta(0, rounding - seconds, -dt.microsecond)
 
