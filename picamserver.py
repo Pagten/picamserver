@@ -283,7 +283,7 @@ class Timelapse:
   def __floorTime(self, dt=None, delta=timedelta(minutes=1)):
     roundTo = delta.total_seconds()
     if dt == None: dt = self._now()
-    seconds = (dt - TZ.localize(dt.min)).seconds
+    seconds = (dt.replace(tzinfo=None) - dt.min).seconds
     rounding = (seconds // roundTo) * roundTo
     return dt + timedelta(0, rounding - seconds, -dt.microsecond)
 
