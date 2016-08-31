@@ -13,8 +13,8 @@ import sys
 import hashlib
 import functools
 import pytz
+import astral
 from functools import partial
-from astral import Astral
 
 BIND_ADDRESS = '192.168.0.12'
 BIND_PORT = 8000
@@ -23,7 +23,8 @@ LOG_FILE = 'picamserver.log'
 TIMELAPSE_INTERVAL = timedelta(seconds=60)
 TIMELAPSE_FOLDERS = ['/mnt/usb/timelapse/']
 TIMELAPSE_FOLDERS_FALLBACK = ['/mnt/sdcard/timelapse/']
-TIMELAPSE_ASTRAL_LOCATION = 'Brussels'
+TIMELAPSE_ASTRAL_LOCATION = astral.Location(('Eksel', 'Europe', 51.15, 5.3833, 'Europe/Brussels', 0))
+TIMELAPSE_ASTRAL_SOLAR_DEPRESSION = 8.5
 TZ=pytz.timezone('Europe/Brussels')
  
 STILL_RESOLUTION = (1640,1232) #(3240,2464)
@@ -223,10 +224,7 @@ class Timelapse:
     self.timer.interrupt()
 
   def _is_night(self, time):
-    yesterday = time - timedelta(days=1)
-    (prev_daylight_start, prev_daylight_end) = self.location.daylight(date=yesterday, local=True)
-    (daylight_start, daylight_end) = self.location.daylight(date=time, local=True)
-    return not(prev_daylight_start <= time and time <= prev_daylight_end) and not(daylight_start <= time and time <= daylight_end)
+    return time < self.location.dawn(date=time, local=True) or self.location.dusk(date=time, local=True) < time
   
   def _write_to_file(self, input, root_folders, now=None):
     if now is None: now = self._now()
@@ -313,7 +311,8 @@ class PiCamServer:
     video_server = TcpVideoStreamServer(camera, (BIND_ADDRESS, BIND_PORT), VIDEO_RESOLUTION, VIDEO_FRAMERATE, VIDEO_BITRATE)
 
     self.logger.info("Creating Astral location")
-    location = Astral()[TIMELAPSE_ASTRAL_LOCATION]
+    location = TIMELAPSE_ASTRAL_LOCATION
+    location.solar_depression = TIMELAPSE_ASTRAL_SOLAR_DEPRESSION
 
     self.logger.info("Creating time lapse")
     timelapse = Timelapse(camera, STILL_RESOLUTION, TIMELAPSE_INTERVAL, location)
