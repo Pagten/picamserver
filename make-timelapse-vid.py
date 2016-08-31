@@ -52,7 +52,7 @@ class TimelapseVideoBuilder:
     self.make_timelapse_video(input_folder, output_path)
 
   def make_timelapse_video(self, input_folder, output_filename):
-    self.logger.info("Creating symlinks")
+    self.logger.info("Creating symlinks for '%s'", input_folder)
     tmp_dir = self._make_symlinks(input_folder)
     input_filename = os.path.join(tmp_dir, IMG_FMT)
 
