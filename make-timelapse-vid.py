@@ -10,7 +10,6 @@ from subprocess import call
 LOG_FILE = 'timelapse-video-builder.log'
 SRC_FOLDER = '/mnt/constructioncam/timelapse'
 DST_FOLDER = '/mnt/constructioncam-vids/timelapse'
-FLAG_FILENAME = 'video_created.txt'
 
 AVCONV_BIN = '/usr/bin/avconv'
 IMG_FMT = 'img_%04d.jpg'
